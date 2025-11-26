@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TableStatus {
+  EMPTY
+  SERVING
+  WAITING_PAYMENT
+}
+
+enum OrderStatus {
+  OPEN
+  COMPLETED
+  PAID
+  CANCELLED
+}
+
+enum OrderItemStatus {
+  SENT
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  QR
+  CARD
+  E_WALLET
+}
+
+model Branch {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String?
+  createdAt DateTime @default(now())
+
+  tables Table[]
+  orders Order[]
+
+  @@index([name])
+}
+
+model Table {
+  id        Int         @id @default(autoincrement())
+  branchId  Int
+  name      String
+  seats     Int         @default(4)
+  status    TableStatus @default(EMPTY)
+  createdAt DateTime    @default(now())
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([branchId])
+  @@index([status])
+}
+
+model MenuCategory {
+  id           Int        @id @default(autoincrement())
+  name         String
+  displayOrder Int        @default(0)
+  createdAt    DateTime   @default(now())
+
+  items MenuItem[]
+
+  @@index([displayOrder])
+}
+
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  categoryId  Int
+  name        String
+  description String?
+  price       Int      // VNĐ
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  category   MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@index([categoryId])
+  @@index([isActive])
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  tableId   Int
+  branchId  Int
+  status    OrderStatus @default(OPEN)
+  note      String?
+  createdAt DateTime    @default(now())
+  closedAt  DateTime?
+
+  table     Table      @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  branch    Branch     @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  items     OrderItem[]
+  payments  Payment[]
+  receipts  Receipt[]
+
+  @@index([tableId])
+  @@index([branchId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id            Int             @id @default(autoincrement())
+  orderId       Int
+  menuItemId    Int
+  nameSnapshot  String
+  priceSnapshot Int // VNĐ
+  quantity      Int             @default(1)
+  status        OrderItemStatus @default(SENT)
+  note          String?
+  createdAt     DateTime        @default(now())
+
+  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([menuItemId])
+  @@index([status])
+}
+
+model Payment {
+  id        Int           @id @default(autoincrement())
+  orderId  Int
+  method   PaymentMethod
+  amount   Int // VNĐ
+  createdAt DateTime      @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model Receipt {
+  id         Int      @id @default(autoincrement())
+  orderId   Int      @unique
+  total      Int      // VNĐ
+  vatAmount  Int      @default(0) // VNĐ
+  companyName String?
+  taxCode    String?
+  email      String?
+  createdAt  DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
