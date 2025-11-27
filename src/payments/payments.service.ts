@@ -34,7 +34,7 @@ export class PaymentsService {
       status: order.status,
       items: order.items.map((item) => ({
         id: item.id,
-        menuItemId: item.menuItemId,
+        productId: item.productId,
         nameSnapshot: item.nameSnapshot,
         priceSnapshot: item.priceSnapshot,
         quantity: item.quantity,

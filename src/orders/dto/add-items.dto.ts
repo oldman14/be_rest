@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 export class AddItemDto {
   @IsInt()
   @Min(1)
-  menuItemId: number;
+  productId: number;
 
   @IsInt()
   @Min(1)

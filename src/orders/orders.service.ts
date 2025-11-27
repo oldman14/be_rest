@@ -36,7 +36,7 @@ export class OrdersService {
       createdAt: order.createdAt,
       items: order.items.map((item) => ({
         id: item.id,
-        menuItemId: item.menuItemId,
+        productId: item.productId,
         nameSnapshot: item.nameSnapshot,
         priceSnapshot: item.priceSnapshot,
         quantity: item.quantity,
@@ -52,20 +52,20 @@ export class OrdersService {
     // Lấy hoặc tạo order OPEN cho bàn
     const currentOrder = await this.tablesService.getCurrentOrder(tableId);
 
-    // Load thông tin menu items
-    const menuItemIds = addItemsDto.items.map((item) => item.menuItemId);
-    const menuItems = await this.prisma.menuItem.findMany({
+    // Load thông tin products
+    const productIds = addItemsDto.items.map((item) => item.productId);
+    const products = await this.prisma.product.findMany({
       where: {
-        id: { in: menuItemIds },
+        id: { in: productIds },
         isActive: true,
       },
     });
 
-    if (menuItems.length !== menuItemIds.length) {
+    if (products.length !== productIds.length) {
       throw new BadRequestException('Một hoặc nhiều món không tồn tại hoặc đã bị vô hiệu hóa');
     }
 
-    const menuItemMap = new Map(menuItems.map((item) => [item.id, item]));
+    const productMap = new Map(products.map((product) => [product.id, product]));
 
     // Tạo order items
     const orderItems = await Promise.all(
@@ -73,9 +73,9 @@ export class OrdersService {
         this.prisma.orderItem.create({
           data: {
             orderId: currentOrder.id,
-            menuItemId: item.menuItemId,
-            nameSnapshot: menuItemMap.get(item.menuItemId)!.name,
-            priceSnapshot: menuItemMap.get(item.menuItemId)!.price,
+            productId: item.productId,
+            nameSnapshot: productMap.get(item.productId)!.name,
+            priceSnapshot: productMap.get(item.productId)!.price,
             quantity: item.quantity,
             status: OrderItemStatus.SENT,
             note: item.note,
