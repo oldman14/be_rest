@@ -13,6 +13,10 @@ export class AddItemDto {
   @IsOptional()
   @IsString()
   note?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
 }
 
 export class AddItemsDto {
