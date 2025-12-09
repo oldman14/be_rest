@@ -12,6 +12,7 @@ export class KitchenService {
   ) {}
 
   /**
+<<<<<<< HEAD
    * Broadcast toàn bộ danh sách tickets qua socket
    * (dùng cho các case thêm món từ phía bàn để màn hình bếp tự cập nhật)
    */
@@ -25,6 +26,8 @@ export class KitchenService {
   }
 
   /**
+=======
+>>>>>>> 067f482 (Enhance kitchen module with WebSocket support and Swagger documentation. Added new endpoints for managing item and ticket statuses, including real-time updates via Socket.IO. Updated package dependencies and improved DTOs for better API documentation.)
    * Lấy danh sách tickets chia theo status (SENT và IN_PROGRESS)
    */
   async getTickets(branchId?: number): Promise<KitchenDisplayDto> {
