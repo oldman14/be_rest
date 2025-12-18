@@ -12,6 +12,19 @@ export class KitchenService {
   ) {}
 
   /**
+   * Broadcast toàn bộ danh sách tickets qua socket
+   * (dùng cho các case thêm món từ phía bàn để màn hình bếp tự cập nhật)
+   */
+  async broadcastTickets(branchId?: number) {
+    if (!this.kitchenGateway) {
+      return;
+    }
+
+    const tickets = await this.getTickets(branchId);
+    this.kitchenGateway.server.emit('kitchen:tickets', tickets);
+  }
+
+  /**
    * Lấy danh sách tickets chia theo status (SENT và IN_PROGRESS)
    */
   async getTickets(branchId?: number): Promise<KitchenDisplayDto> {

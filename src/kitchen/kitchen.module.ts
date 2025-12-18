@@ -6,7 +6,7 @@ import { KitchenGateway } from './kitchen.gateway';
 @Module({
   controllers: [KitchenController],
   providers: [KitchenService, KitchenGateway],
-  exports: [KitchenGateway],
+  exports: [KitchenService, KitchenGateway],
 })
 export class KitchenModule {}
 

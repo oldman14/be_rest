@@ -4,12 +4,14 @@ import { OrderStatus, OrderItemStatus, TableStatus } from '@prisma/client';
 import { OrderResponseDto, OrderTotalsDto } from './dto/order-response.dto';
 import { AddItemsDto } from './dto/add-items.dto';
 import { TablesService } from '../tables/tables.service';
+import { KitchenService } from '../kitchen/kitchen.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private tablesService: TablesService,
+    private kitchenService: KitchenService,
   ) {}
 
   async findOne(orderId: number): Promise<OrderResponseDto> {
@@ -83,6 +85,9 @@ export class OrdersService {
         }),
       ),
     );
+
+    // Sau khi thêm món, broadcast lại danh sách tickets cho bếp
+    await this.kitchenService.broadcastTickets(currentOrder.branchId);
 
     // Lấy lại order với items mới
     return this.findOne(currentOrder.id);

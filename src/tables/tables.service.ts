@@ -40,7 +40,38 @@ export class TablesService {
       },
     });
 
-    // Nếu chưa có order OPEN, tạo mới
+    // Nếu chưa có order OPEN, tìm order COMPLETED gần nhất (chưa PAID)
+    if (!order) {
+      order = await this.prisma.order.findFirst({
+        where: {
+          tableId,
+          status: OrderStatus.COMPLETED,
+        },
+        include: {
+          items: {
+            orderBy: { createdAt: 'asc' },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc', // Lấy order mới nhất
+        },
+      });
+
+      // Nếu tìm thấy order COMPLETED, chuyển về OPEN (để có thể thêm món mới)
+      if (order) {
+        order = await this.prisma.order.update({
+          where: { id: order.id },
+          data: { status: OrderStatus.OPEN },
+          include: {
+            items: {
+              orderBy: { createdAt: 'asc' },
+            },
+          },
+        });
+      }
+    }
+
+    // Nếu vẫn chưa có order nào, tạo mới
     if (!order) {
       order = await this.prisma.order.create({
         data: {
